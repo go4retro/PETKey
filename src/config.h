@@ -75,7 +75,7 @@
 
 #define XPT_PIN_STROBE      (1<<PIN6)
 
-#elif CONFIG_HARDWARE_VARIANT == 2 || defined ARDUINO_AVR_MEGA
+#elif CONFIG_HARDWARE_VARIANT == 2 || defined ARDUINO_AVR_MEGA2560
 /* ---------- Hardware configuration: PETKey Arduino ---------- */
 
 #define SCAN_TIMER          TIMER0_COMPA_vect
