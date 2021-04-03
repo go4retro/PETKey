@@ -73,7 +73,7 @@ void vkb_init(void) {
 #define KB_SCAN_CODE_MASK 0x7f
 #define META_LSHIFT       0x01
 #define META_RSHIFT       0x02
-#define META_CONTROL      0x02
+#define META_CMDR      0x02
 #define META_SHIFT_MASK   (META_LSHIFT | META_RSHIFT)
 
 #define MOD_OVERRIDE      0x80
@@ -95,7 +95,7 @@ void set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t control, uint8_t state
           set_switch(MAT_PET_KEY_RSHIFT, FALSE);
       }
       set_switch(shifted & ~MOD_OVERRIDE, state);
-    } else if(meta & META_CONTROL) {    // control is on
+    } else if(meta & META_CMDR) {    // control is on
       if(!(meta & META_SHIFT_MASK)) {   // shift is not on
         if(control & MOD_OVERRIDE) {    // shift off and virtual shift needed
           set_switch(MAT_PET_KEY_LSHIFT, state);
@@ -124,7 +124,7 @@ void set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t control, uint8_t state
           set_switch(MAT_PET_KEY_RSHIFT, TRUE);
       }
       set_switch(shifted & ~MOD_OVERRIDE, state);
-    } else if(meta & META_CONTROL) {    // control is on
+    } else if(meta & META_CMDR) {    // control is on
       if(!(meta & META_SHIFT_MASK)) {   // shift is not on
         if(control & MOD_OVERRIDE) {    // shift off and virtual shift not needed
           set_switch(MAT_PET_KEY_LSHIFT, state);
@@ -414,17 +414,17 @@ static void map_key(uint8_t key) {
     else
       meta &= ~META_RSHIFT;
     break;
-  case SCAN_C64_KEY_CTRL:
-    debug_puts("CTRL");
-    // no key to depress
-    if(state)
-      meta |= META_CONTROL;
-    else
-      meta &= ~META_CONTROL;
-    break;
-
   case SCAN_C64_KEY_CBM:
     debug_puts("CBM");
+    // no key to depress
+    if(state)
+      meta |= META_CMDR;
+    else
+      meta &= ~META_CMDR;
+    break;
+
+  case SCAN_C64_KEY_CTRL:
+    debug_puts("CTRL");
     set_vkey(MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, state);
     break;
   }
