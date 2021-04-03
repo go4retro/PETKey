@@ -321,7 +321,7 @@ static void map_key(uint8_t key) {
 
   case SCAN_C64_KEY_PLUS:
     debug_putc('+');
-    set_vkey(MAT_PET_KEY_PLUS, MAT_PET_KEY_LEFT_BRACKET | MOD_OVERRIDE, MAT_PET_KEY_NONE, state);
+    set_vkey(MAT_PET_KEY_PLUS, MAT_PET_KEY_LEFT_BRACKET, MAT_PET_KEY_NONE, state);
     break;
   case SCAN_C64_KEY_P:
     debug_putc('P');
