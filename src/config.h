@@ -25,6 +25,7 @@
 #define FLASH_MEM_DATA  1
 
 #include <avr/io.h>
+#include <util/delay.h>
 
 #ifndef ARDUINO
  #include "autoconf.h"
@@ -91,16 +92,111 @@ static inline void timer_init(void) {
 #define KB_COL_IN           PINA
 #define KB_COL_DDR          DDRA
 
-#define XPT_PORT_DATA_OUT   PORTB
-#define XPT_DDR_DATA        DDRB
-#define XPT_PORT_STROBE_OUT PORTD
-#define XPT_DDR_STROBE      DDRD
+#define XPT_RESET_DDR       DDRC
+#define XPT_RESET_OUT       PORTC
+#define XPT_RESET_PIN       PIN6
 
-#define XPT_PIN_STROBE      _BV(PIN6)
+#define XPT_AX0_DDR         DDRC
+#define XPT_AX0_OUT         PORTC
+#define XPT_AX0_PIN         PIN4
+
+#define XPT_AX1_DDR         DDRG
+#define XPT_AX1_OUT         PORTG
+#define XPT_AX1_PIN         PIN0
+
+#define XPT_AX2_DDR         DDRG
+#define XPT_AX2_OUT         PORTG
+#define XPT_AX2_PIN         PIN2
+
+#define XPT_AX3_DDR         DDRC
+#define XPT_AX3_OUT         PORTC
+#define XPT_AX3_PIN         PIN3
+
+#define XPT_AY0_DDR         DDRD
+#define XPT_AY0_OUT         PORTD
+#define XPT_AY0_PIN         PIN7
+
+#define XPT_AY1_DDR         DDRC
+#define XPT_AY1_OUT         PORTC
+#define XPT_AY1_PIN         PIN0
+
+#define XPT_AY2_DDR         DDRC
+#define XPT_AY2_OUT         PORTC
+#define XPT_AY2_PIN         PIN5
+
+#define XPT_DATA_DDR        DDRC
+#define XPT_DATA_OUT        PORTC
+#define XPT_DATA_PIN        PIN1
+
+#define XPT_STROBE_DDR      DDRG
+#define XPT_STROBE_OUT      PORTG
+#define XPT_STROBE_PIN      PIN1
 
 #else
 #  error "CONFIG_HARDWARE_VARIANT is unset or set to an unknown value."
 #endif
+
+static inline void xpt_init(void) {
+  XPT_STROBE_OUT &= ~_BV(XPT_STROBE_PIN);
+
+  XPT_RESET_DDR |= _BV(XPT_RESET_PIN);
+  XPT_AX0_DDR |= _BV(XPT_AX0_PIN);
+  XPT_AX1_DDR |= _BV(XPT_AX1_PIN);
+  XPT_AX2_DDR |= _BV(XPT_AX2_PIN);
+  XPT_AX3_DDR |= _BV(XPT_AX3_PIN);
+  XPT_AY0_DDR |= _BV(XPT_AY0_PIN);
+  XPT_AY1_DDR |= _BV(XPT_AY1_PIN);
+  XPT_AY2_DDR |= _BV(XPT_AY2_PIN);
+  XPT_DATA_DDR |= _BV(XPT_DATA_PIN);
+  XPT_STROBE_DDR |= _BV(XPT_STROBE_PIN);
+
+  XPT_RESET_OUT |= _BV(XPT_RESET_PIN);
+  _delay_us(1);
+  XPT_RESET_OUT &= ~_BV(XPT_RESET_PIN);
+
+}
+
+// bits are 0 AY2,1,0,AX3,2,1,0
+static inline void xpt_send(uint8_t sw, uint8_t data) {
+  if(sw & 1)
+    XPT_AX0_OUT |= _BV(XPT_AX0_PIN);
+  else
+    XPT_AX0_OUT &= ~_BV(XPT_AX0_PIN);
+  if(sw & 2)
+    XPT_AX1_OUT |= _BV(XPT_AX1_PIN);
+  else
+    XPT_AX1_OUT &= ~_BV(XPT_AX1_PIN);
+  if(sw & 4)
+    XPT_AX2_OUT |= _BV(XPT_AX2_PIN);
+  else
+    XPT_AX2_OUT &= ~_BV(XPT_AX2_PIN);
+  if(sw & 8)
+    XPT_AX3_OUT |= _BV(XPT_AX3_PIN);
+  else
+    XPT_AX3_OUT &= ~_BV(XPT_AX3_PIN);
+
+  if(sw & 16)
+    XPT_AY0_OUT |= _BV(XPT_AY0_PIN);
+  else
+    XPT_AY0_OUT &= ~_BV(XPT_AY0_PIN);
+  if(sw & 32)
+    XPT_AY1_OUT |= _BV(XPT_AY1_PIN);
+  else
+    XPT_AY1_OUT &= ~_BV(XPT_AY1_PIN);
+  if(sw & 64)
+    XPT_AY2_OUT |= _BV(XPT_AY2_PIN);
+  else
+    XPT_AY2_OUT &= ~_BV(XPT_AY2_PIN);
+
+  if(data)
+    XPT_DATA_OUT |= _BV(XPT_DATA_PIN);
+  else
+    XPT_DATA_OUT &= ~_BV(XPT_DATA_PIN);
+
+  XPT_STROBE_OUT |= _BV(XPT_STROBE_PIN);
+  _delay_us(1);
+  XPT_STROBE_OUT &= ~_BV(XPT_STROBE_PIN);
+}
 
 #define SCAN_MAP(r,c)             ((r == 0 ? 7 : \
                                   r == 1 ? 1 : \

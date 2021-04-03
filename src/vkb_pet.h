@@ -22,76 +22,78 @@
 #define VKB_PET_H
 
 /*
-  X0 = B3
-  X1 = B7
-  X2 = B6
-  X3 = B2
+  X0 = 0
+  X1 = 1
+  X2 = 2
+  X3 = 3
  */
 
-#define MATRIX_X(x)           (  ((x & 1) ? 8 : 0)   \
-                               | ((x & 2) ? 128 : 0) \
-                               | ((x & 4) ? 64 : 0)  \
-                               | ((x & 8) ? 4 : 0))
+#define MATRIX_X(x)           (  ((x & 1) ? 1 : 0)   \
+                               | ((x & 2) ? 2 : 0) \
+                               | ((x & 4) ? 4 : 0)  \
+                               | ((x & 8) ? 8 : 0))
 
 /*
-  Y0 = B5
-  Y1 = B4
-  Y2 = B1
+  Y0 = 4
+  Y1 = 5
+  Y2 = 6
  */
 
-#define MATRIX_Y(y)           (  ((y & 1) ? 32 : 0) \
-                               | ((y & 2) ? 16 : 0) \
-                               | ((y & 4) ? 2 :  0))
+#define MATRIX_Y(y)           (  ((y & 1) ? 16 : 0) \
+                               | ((y & 2) ? 32 : 0) \
+                               | ((y & 4) ? 64 : 0))
 
 
-/*  1 = Y3
-    2 = Y2
-    3 = Y1
-    4 = Y0
-    5 = Y7
-    6 = Y6
-    7 = Y5
-    8 = Y4
-    9 = X6
-    10= X7
-    11 = X8
-    12 = X9
-    13 = X10
-    14 = X11
-    15 = X4
-    16 = X5
+/*
+ * From: http://www.6502.org/users/sjgray/projects/petkeyboard/index.html
+ * PET Internal:
+ * 12  11  10  9   8   7   6   5   4   3   2   1   J   H   F   E   D   C   B   A   <-LABEL ON PCB
+ * 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 <-PIN
+ * GND KEY R9  R8  R7  R6  R5  R4  R3  R2  R1  R0  C7  C6  C5  C4  C3  C2  C1  C0  <-FUNCTION
  */
 
-#define MATRIX_MAP(y,x)         (MATRIX_Y(( \
-                                 y == 1 ? 3 : \
-                                 y == 2 ? 2 : \
-                                 y == 4 ? 0 : \
-                                 y == 5 ? 7 : \
-                                 y == 6 ? 6 : \
-                                 y == 7 ? 5 : \
-                                 y == 8 ? 4 : 0)) \
+
+
+#define MATRIX_MAP(x,y)         ( \
+                                 MATRIX_X( \
+                                          ( \
+                                           x == 0 ? 13 : \
+                                           x == 1 ? 12 : \
+                                           x == 2 ? 11 : \
+                                           x == 3 ? 10 : \
+                                           x == 4 ? 9 : \
+                                           x == 5 ? 8 : \
+                                           x == 6 ? 4 : \
+                                           x == 7 ? 3 : \
+                                           x == 8 ? 2 : 1 \
+                                          ) \
+                                         ) \
                                  | \
-                                MATRIX_X(( \
-                                 x == 9 ? 8   : \
-                                 x == 10 ? 9  : \
-                                 x == 11 ? 10 : \
-                                 x == 12 ? 11 : \
-                                 x == 13 ? 12 : \
-                                 x == 14 ? 13 : \
-                                 x == 15 ? 4  : \
-                                 x == 16 ? 5  : 0)))
+                                 MATRIX_Y( \
+                                          ( \
+                                           y == 0 ? 6 :   \
+                                           y == 1 ? 4 :   \
+                                           y == 2 ? 7 :   \
+                                           y == 3 ? 5 :   \
+                                           y == 4 ? 0 :   \
+                                           y == 5 ? 1 :   \
+                                           y == 6 ? 2 : 3 \
+                                          ) \
+                                         ) \
+                                )
                                 
 
 
 #define MAT_PET_KEY_EQUALS        MATRIX_MAP(0,0)
 #define MAT_PET_KEY_PERIOD        MATRIX_MAP(0,1)
+
 #define MAT_PET_KEY_NONE          MATRIX_MAP(0,2)
 
 #define MAT_PET_KEY_RUN_STOP      MATRIX_MAP(0,3)
 #define MAT_PET_KEY_LESS_THAN     MATRIX_MAP(0,4)
 #define MAT_PET_KEY_SPACE         MATRIX_MAP(0,5)
 #define MAT_PET_KEY_LEFT_BRACKET  MATRIX_MAP(0,6)
-#define MAT_PET_KEY_REVERSE       MATRIX_MAP(1,7)
+#define MAT_PET_KEY_REVERSE       MATRIX_MAP(0,7)
 
 #define MAT_PET_KEY_MINUS         MATRIX_MAP(1,0)
 #define MAT_PET_KEY_0             MATRIX_MAP(1,1)

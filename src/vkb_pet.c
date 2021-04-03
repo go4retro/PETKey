@@ -44,29 +44,12 @@ void vkb_irq(void) {
 }
 
 void set_switch(uint8_t sw, uint8_t state) {
-  XPT_PORT_DATA_OUT=((state!=FALSE) | sw);
-  // strobe STROBE PIN
-  XPT_PORT_STROBE_OUT|=XPT_PIN_STROBE;
-  // bring low
-  XPT_PORT_STROBE_OUT&=(uint8_t)~XPT_PIN_STROBE;
-}
-
-void reset_matrix(void) {
-  uint8_t i=0;
-
-  // reset switches...
-  do {
-    set_switch(i+=2,FALSE);
-  } while (i!=0);
+  xpt_send(sw,state);
 }
 
 void vkb_init(void) {
   kb_init();
-  XPT_PORT_STROBE_OUT&=(uint8_t)~XPT_PIN_STROBE;
-  XPT_DDR_STROBE|=XPT_PIN_STROBE;
-  XPT_DDR_DATA=0xff;
-
-  reset_matrix();
+  xpt_init();
 }
 
 
