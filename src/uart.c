@@ -1,6 +1,6 @@
 /*
  *  PETKey - VIC/64 to PET keyboard adapter
- *  Copyright (C) 2021  Jim Brain and RETRO Innovations <go4retro@go4retro.com>
+ *  Copyright (C) 2021 Jim Brain and RETRO Innovations <go4retro@go4retro.com>
  *
  *  This code is a modification of uart functions in sd2iec:
  *  Copyright (C) 2007,2008  Ingo Korb <ingo@akana.de>

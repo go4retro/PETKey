@@ -1,6 +1,6 @@
 /*
  *  PETKey - VIC/64 to PET keyboard adapter
- *  Copyright (C) 2021  Jim Brain and RETRO Innovations <go4retro@go4retro.com>
+ *  Copyright (C) 2021 Jim Brain and RETRO Innovations <go4retro@go4retro.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,10 +20,6 @@
 
 #ifndef VKB_PET_H
 #define VKB_PET_H
-
-#define POLL_ADDR_LAYOUT         (void*)0
-#define POLL_ADDR_LED_STATE      (void*)1
-#define POLL_ADDR_SW_STATE       (void*)2
 
 /*
   X0 = B3

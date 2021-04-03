@@ -1,6 +1,6 @@
 /*
  *  PETKey - VIC/64 to PET keyboard adapter
- *  Copyright (C) 2021  Jim Brain and RETRO Innovations <go4retro@go4retro.com>
+ *  Copyright (C) 2021 Jim Brain and RETRO Innovations <go4retro@go4retro.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

@@ -1,6 +1,6 @@
 /*
  *  PETKey - VIC/64 to PET keyboard adapter
- *  Copyright (C) 2021  Jim Brain and RETRO Innovations <go4retro@go4retro.com>
+ *  Copyright (C) 2021 Jim Brain and RETRO Innovations <go4retro@go4retro.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,17 +26,12 @@
 
 #include <avr/io.h>
 
-#if defined ARDUINO_AVR_UNO || defined ARDUINO_AVR_PRO || defined ARDUINO_AVR_NANO
- #define CONFIG_HARDWARE_VARIANT   3 // Hardware variant 3 is Arduino, with BAV on D2 for wakeup from standby mode.
- // Variant 3 has been tested on Pro Mini, Uno, and Nano as functional.  Select target platform in the IDE.
-#endif
-
 #ifndef ARDUINO
  #include "autoconf.h"
 #else
 
 // Debug to serial
-//#define CONFIG_UART_DEBUG
+#define CONFIG_UART_DEBUG
 //#define CONFIG_UART_DEBUG_SW
 #define CONFIG_UART_DEBUG_RATE    115200
 #define CONFIG_UART_DEBUG_FLUSH
@@ -143,9 +138,11 @@ static inline uint8_t kb_read_col(void) {
 
 #ifdef VER_PATCH
 #ifdef VER_FIX
-  #define VER_TEXT           TOSTRING(VER_MAJOR) "." TOSTRING(VER_MINOR) "." TOSTRING(VER_PATCH) "." TOSTRING(VER_FIX)
+  #define VER_TEXT           TOSTRING(VER_MAJOR) "." TOSTRING(VER_MINOR) "." \
+                             TOSTRING(VER_PATCH) "." TOSTRING(VER_FIX)
 #else
-  #define VER_TEXT           TOSTRING(VER_MAJOR) "." TOSTRING(VER_MINOR) "." TOSTRING(VER_PATCH)
+  #define VER_TEXT           TOSTRING(VER_MAJOR) "." TOSTRING(VER_MINOR) "." \
+                             TOSTRING(VER_PATCH)
 #endif
 #else
   #define VER_TEXT           TOSTRING(VER_MAJOR) "." TOSTRING(VER_MINOR)
@@ -158,8 +155,8 @@ static inline uint8_t kb_read_col(void) {
 
 #ifdef CONFIG_UART_DEBUG
 #  define UART0_ENABLE
-#  ifdef CONFIG_UART_BAUDRATE
-#  define UART0_BAUDRATE CONFIG_UART_BAUDRATE
+#  ifdef CONFIG_UART_DEBUG_RATE
+#  define UART0_BAUDRATE CONFIG_UART_DEBUG_RATE
 #  else
 #  define UART0_BAUDRATE 57600
 #  endif
@@ -171,5 +168,6 @@ static inline uint8_t kb_read_col(void) {
 #  endif
 #endif
 
+#define UART_DOUBLE_SPEED
 
 #endif /*CONFIG_H*/
