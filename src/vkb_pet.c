@@ -44,6 +44,11 @@ void vkb_irq(void) {
 }
 
 void set_switch(uint8_t sw, uint8_t state) {
+  debug_putc('(');
+  debug_puthex(sw & 15);
+  debug_putc(':');
+  debug_puthex(sw >> 4);
+  debug_putc(')');
   xpt_send(sw,state);
 }
 
@@ -56,72 +61,162 @@ void vkb_init(void) {
 #define KB_SCAN_CODE_MASK 0x7f
 #define META_LSHIFT       0x01
 #define META_RSHIFT       0x02
-#define META_CMDR      0x02
+#define META_CMDR         0x04
 #define META_SHIFT_MASK   (META_LSHIFT | META_RSHIFT)
 
 #define MOD_OVERRIDE      0x80
 
-void set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t control, uint8_t state) {
+void set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_t state) {
   // TODO optimize for MAT_PET_KEY_NONE
 
-  if(state) {                           // key press
-    if(!(meta & META_SHIFT_MASK)) {     // shift is not on
-      if(unshifted & MOD_OVERRIDE) {    // shift off and virtual shift needed
-        set_switch(MAT_PET_KEY_LSHIFT, state);
-      }
-      set_switch(unshifted & ~MOD_OVERRIDE, state);
-    } else if(meta & META_SHIFT_MASK) { // shift is on
-      if(shifted & MOD_OVERRIDE) {      // shift on and virtual unshift needed)
-        if(meta && META_LSHIFT)         // do I need to unshift left?
-          set_switch(MAT_PET_KEY_LSHIFT, FALSE);
-        if(meta && META_RSHIFT)         // do I need to unshift right?
-          set_switch(MAT_PET_KEY_RSHIFT, FALSE);
-      }
-      set_switch(shifted & ~MOD_OVERRIDE, state);
-    } else if(meta & META_CMDR) {    // control is on
-      if(!(meta & META_SHIFT_MASK)) {   // shift is not on
-        if(control & MOD_OVERRIDE) {    // shift off and virtual shift needed
-          set_switch(MAT_PET_KEY_LSHIFT, state);
-        }
-      } else if(meta & META_SHIFT_MASK) { // shift is on
-        if(!(control & MOD_OVERRIDE)) {   // shift on and virtual unshift needed
-          if(meta && META_LSHIFT)         // do I need to unshift left?
+  switch(meta) {
+    case META_LSHIFT:
+    case META_RSHIFT:
+    case (META_LSHIFT | META_RSHIFT):
+      if(state) {                           // key press
+        if(shifted & MOD_OVERRIDE) {        // shift on and virtual unshift needed
+          if(meta && META_LSHIFT)           // do I need to unshift left?
             set_switch(MAT_PET_KEY_LSHIFT, FALSE);
-          if(meta && META_RSHIFT)         // do I need to unshift right?
+          if(meta && META_RSHIFT)           // do I need to unshift right?
             set_switch(MAT_PET_KEY_RSHIFT, FALSE);
         }
-      }
-      set_switch(control & ~MOD_OVERRIDE, state);
-    }
-  } else {                              // key release
-    if(!(meta & META_SHIFT_MASK)) {     // shift is not on.
-      if(unshifted & MOD_OVERRIDE) {    // shift off and virtual shift is on
-        set_switch(MAT_PET_KEY_LSHIFT, state);
-      }
-      set_switch(unshifted & ~MOD_OVERRIDE, state);
-    } else if(meta & META_SHIFT_MASK) { // shift is on
-      if(shifted & MOD_OVERRIDE) {      // shift on and virtual unshift needed)
-        if(meta && META_LSHIFT)         // do I need to shift left?
-          set_switch(MAT_PET_KEY_LSHIFT, TRUE);
-        if(meta && META_RSHIFT)         // do I need to shift right?
-          set_switch(MAT_PET_KEY_RSHIFT, TRUE);
-      }
-      set_switch(shifted & ~MOD_OVERRIDE, state);
-    } else if(meta & META_CMDR) {    // control is on
-      if(!(meta & META_SHIFT_MASK)) {   // shift is not on
-        if(control & MOD_OVERRIDE) {    // shift off and virtual shift not needed
-          set_switch(MAT_PET_KEY_LSHIFT, state);
-        }
-      } else if(meta & META_SHIFT_MASK) { // shift is on
-        if(!(control & MOD_OVERRIDE)) {   // shift on and virtual unshift not needed
-          if(meta && META_LSHIFT)         // do I need to shift left?
+        set_switch(shifted & ~MOD_OVERRIDE, state);
+      } else {
+        if(shifted & MOD_OVERRIDE) {        // shift on and virtual unshift needed)
+          if(meta && META_LSHIFT)           // do I need to shift left?
             set_switch(MAT_PET_KEY_LSHIFT, TRUE);
-          if(meta && META_RSHIFT)         // do I need to shift right?
+          if(meta && META_RSHIFT)           // do I need to shift right?
             set_switch(MAT_PET_KEY_RSHIFT, TRUE);
         }
+        set_switch(shifted & ~MOD_OVERRIDE, state);
       }
-      set_switch(control & ~MOD_OVERRIDE, state);
+      break;
+    case META_CMDR:
+      if(state) {                           // key press
+        if(cmdr & MOD_OVERRIDE) {           // shift off and virtual shift needed
+          set_switch(MAT_PET_KEY_LSHIFT, state);
+        }
+        set_switch(cmdr & ~MOD_OVERRIDE, state);
+      } else {
+        if(cmdr & MOD_OVERRIDE) {           // shift off and virtual shift not needed
+          set_switch(MAT_PET_KEY_LSHIFT, state);
+        }
+        set_switch(cmdr & ~MOD_OVERRIDE, state);
+      }
+      break;
+    case (META_CMDR | META_LSHIFT):
+    case (META_CMDR | META_RSHIFT):
+    case (META_CMDR | META_LSHIFT | META_RSHIFT):
+      // do nothing
+      break;
+    default:
+      // unshifted, no CMDR key
+      if(state) {                           // key press
+        if(unshifted & MOD_OVERRIDE) {      // shift off and virtual shift needed
+          set_switch(MAT_PET_KEY_LSHIFT, state);
+        }
+        set_switch(unshifted & ~MOD_OVERRIDE, state);
+      } else {
+        if(unshifted & MOD_OVERRIDE) {      // shift off and virtual shift is on
+          set_switch(MAT_PET_KEY_LSHIFT, state);
+        }
+        set_switch(unshifted & ~MOD_OVERRIDE, state);
+      }
+      break;
+  }
+}
+
+static uint8_t ascii_mapping[][2] = {
+                                    {'a', MAT_PET_KEY_A},
+                                    {'b', MAT_PET_KEY_B},
+                                    {'c', MAT_PET_KEY_C},
+                                    {'d', MAT_PET_KEY_D},
+                                    {'e', MAT_PET_KEY_E},
+                                    {'f', MAT_PET_KEY_F},
+                                    {'g', MAT_PET_KEY_G},
+                                    {'h', MAT_PET_KEY_H},
+                                    {'i', MAT_PET_KEY_I},
+                                    {'j', MAT_PET_KEY_J},
+                                    {'k', MAT_PET_KEY_K},
+                                    {'l', MAT_PET_KEY_L},
+                                    {'m', MAT_PET_KEY_M},
+                                    {'n', MAT_PET_KEY_N},
+                                    {'o', MAT_PET_KEY_O},
+                                    {'p', MAT_PET_KEY_P},
+                                    {'q', MAT_PET_KEY_Q},
+                                    {'r', MAT_PET_KEY_R},
+                                    {'s', MAT_PET_KEY_S},
+                                    {'t', MAT_PET_KEY_T},
+                                    {'u', MAT_PET_KEY_U},
+                                    {'v', MAT_PET_KEY_V},
+                                    {'w', MAT_PET_KEY_W},
+                                    {'x', MAT_PET_KEY_X},
+                                    {'y', MAT_PET_KEY_Y},
+                                    {'z', MAT_PET_KEY_Z},
+                                    {'0', MAT_PET_KEY_0},
+                                    {'1', MAT_PET_KEY_1},
+                                    {'2', MAT_PET_KEY_2},
+                                    {'3', MAT_PET_KEY_3},
+                                    {'4', MAT_PET_KEY_4},
+                                    {'5', MAT_PET_KEY_5},
+                                    {'6', MAT_PET_KEY_6},
+                                    {'7', MAT_PET_KEY_7},
+                                    {'8', MAT_PET_KEY_8},
+                                    {'9', MAT_PET_KEY_9},
+                                    {'+', MAT_PET_KEY_PLUS},
+                                    {'-', MAT_PET_KEY_MINUS},
+                                    {'!', MAT_PET_KEY_EXCLAMATION},
+                                    {'@', MAT_PET_KEY_AT},
+                                    {'#', MAT_PET_KEY_HASH},
+                                    {'$', MAT_PET_KEY_DOLLAR_SIGN},
+                                    {'%', MAT_PET_KEY_PERCENT},
+                                    {'^', MAT_PET_KEY_UP_ARROW},
+                                    {'&', MAT_PET_KEY_AMPERSAND},
+                                    {'*', MAT_PET_KEY_ASTERIX},
+                                    {'(', MAT_PET_KEY_LEFT_PAREN},
+                                    {')', MAT_PET_KEY_RIGHT_PAREN},
+                                    {',', MAT_PET_KEY_COMMA},
+                                    {'.', MAT_PET_KEY_PERIOD},
+                                    {'/', MAT_PET_KEY_SLASH},
+                                    {'?', MAT_PET_KEY_QUESTION_MARK},
+                                    {';', MAT_PET_KEY_SEMICOLON},
+                                    {':', MAT_PET_KEY_COLON},
+                                    {'\'', MAT_PET_KEY_APOSTROPHE},
+                                    {'"', MAT_PET_KEY_DOUBLE_QUOTE},
+                                    {'[', MAT_PET_KEY_LEFT_BRACKET},
+                                    {']', MAT_PET_KEY_RIGHT_BRACKET},
+                                    {13, MAT_PET_KEY_RETURN},
+                                    {'<',MAT_PET_KEY_LESS_THAN},
+                                    {'>',MAT_PET_KEY_GREATER_THAN}
+                                   };
+
+static void map_ascii_key(char key) {
+  uint8_t map;
+
+  for(uint8_t i = 0; i < sizeof(ascii_mapping)/sizeof(ascii_mapping[0]); i++) {
+    //debug_putc('<');
+    //debug_puthex(key);
+    //debug_putc('|');
+    //debug_puthex(ascii_mapping[i][0]);
+    //debug_putc('>');
+    if(ascii_mapping[i][0] == key) {
+      map = ascii_mapping[i][1];
+      debug_putc(key);
+      set_vkey(map, map, map, TRUE);
+      _delay_ms(16);
+      set_vkey(map, map, map, FALSE);
+      _delay_ms(16);
+      break;
     }
+  }
+}
+
+static void map_ascii_string(char *str) {
+  char *p = &str[0];
+
+  while(*p) {
+    map_ascii_key(*p);
+    p++;
   }
 }
 
@@ -185,22 +280,6 @@ static void map_key(uint8_t key) {
   case SCAN_C64_KEY_CRSR_RIGHT:
     debug_puts("CSRT");
     set_vkey(MAT_PET_KEY_CRSR_RIGHT, MAT_PET_KEY_CRSR_RIGHT, MAT_PET_KEY_NONE, state);
-    break;
-  case SCAN_C64_KEY_F7:
-    debug_puts("F7");
-    set_vkey(MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, state);
-    break;
-  case SCAN_C64_KEY_F1:
-    debug_puts("F1");
-    set_vkey(MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, state);
-    break;
-  case SCAN_C64_KEY_F3:
-    debug_puts("F3");
-    set_vkey(MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, state);
-    break;
-  case SCAN_C64_KEY_F5:
-    debug_puts("F5");
-    set_vkey(MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, state);
     break;
   case SCAN_C64_KEY_CRSR_DOWN:
     debug_puts("CSDN");
@@ -345,11 +424,11 @@ static void map_key(uint8_t key) {
     break;
   case SCAN_C64_KEY_ASTERIX:
     debug_putc('*');
-    set_vkey(MAT_PET_KEY_ASTERIX, MAT_PET_KEY_AMPERSAND | MOD_OVERRIDE, MAT_PET_KEY_LEFT_ARROW | MOD_OVERRIDE, state);
+    set_vkey(MAT_PET_KEY_ASTERIX, MAT_PET_KEY_AT, MAT_PET_KEY_LEFT_ARROW | MOD_OVERRIDE, state);
     break;
   case SCAN_C64_KEY_SEMICOLON:
     debug_putc(';');
-    set_vkey(MAT_PET_KEY_NONE, MAT_PET_KEY_RIGHT_BRACKET | MOD_OVERRIDE, MAT_PET_KEY_NONE, state);
+    set_vkey(MAT_PET_KEY_SEMICOLON, MAT_PET_KEY_RIGHT_BRACKET | MOD_OVERRIDE, MAT_PET_KEY_NONE, state);
     break;
   case SCAN_C64_KEY_HOME:
     debug_puts("HOME");
@@ -408,36 +487,37 @@ static void map_key(uint8_t key) {
 
   case SCAN_C64_KEY_CTRL:
     debug_puts("CTRL");
-    set_vkey(MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, MAT_PET_KEY_NONE, state);
+    break;
+
+  case SCAN_C64_KEY_F1:
+    debug_puts("F1");
+    if(state) {
+      if(meta & META_SHIFT_MASK)
+        map_ascii_string("directory\r");
+    } else {
+      map_ascii_string("directory\r");
+    }
+    break;
+  case SCAN_C64_KEY_F3:
+    debug_puts("F3");
+    if(state)
+      map_ascii_key('b');
+    break;
+  case SCAN_C64_KEY_F5:
+    debug_puts("F5");
+    if(state)
+      map_ascii_key('c');
+    break;
+  case SCAN_C64_KEY_F7:
+    debug_puts("F7");
+    if(state)
+      map_ascii_key('d');
     break;
   }
 }
 
 void vkb_scan(void) {
   uint8_t key;
-
-  while(1) {
-    debug_puthex('=');
-    xpt_send(13 | (6 << 4),TRUE);
-    _delay_ms(1000);
-    xpt_send(13 | (6 << 4),FALSE);
-    _delay_ms(1000);
-  }
-
-  for(uint8_t r = 0; r < 10; r++) {
-    for(uint8_t c = 0; c < 8; c++) {
-      debug_puthex(r);
-      debug_putc(':');
-      debug_putcrlf();
-      debug_puthex(c);
-      debug_putcrlf();
-      xpt_send(r | c << 4,TRUE);
-      _delay_ms(1000);
-      xpt_send(r | c << 4,FALSE);
-      _delay_ms(1000);
-    }
-  }
-  while(1);
 
   for(;;) {
     if(kb_data_available() != 0) {

@@ -132,6 +132,27 @@ static inline void timer_init(void) {
 #define XPT_STROBE_OUT      PORTD
 #define XPT_STROBE_PIN      PIN7
 
+#define XPT_ROW_0           13
+#define XPT_ROW_1           12
+#define XPT_ROW_2           11
+#define XPT_ROW_3           10
+#define XPT_ROW_4           9
+#define XPT_ROW_5           8
+#define XPT_ROW_6           4
+#define XPT_ROW_7           3
+#define XPT_ROW_8           2
+#define XPT_ROW_9           1
+
+#define XPT_COL_0           6
+#define XPT_COL_1           4
+#define XPT_COL_2           7
+#define XPT_COL_3           5
+#define XPT_COL_4           0
+#define XPT_COL_5           1
+#define XPT_COL_6           2
+#define XPT_COL_7           3
+
+
 #else
 #  error "CONFIG_HARDWARE_VARIANT is unset or set to an unknown value."
 #endif
@@ -194,27 +215,31 @@ static inline void xpt_send(uint8_t sw, uint8_t data) {
     XPT_DATA_OUT &= ~_BV(XPT_DATA_PIN);
 
   XPT_STROBE_OUT |= _BV(XPT_STROBE_PIN);
-  _delay_ms(1000);
+  _delay_us(1);
   XPT_STROBE_OUT &= ~_BV(XPT_STROBE_PIN);
-  _delay_ms(1000);
+  _delay_us(1);
 }
 
-#define SCAN_MAP(r,c)             ((r == 0 ? 7 : \
-                                  r == 1 ? 1 : \
-                                  r == 2 ? 2 : \
-                                  r == 3 ? 3 : \
-                                  r == 4 ? 4 : \
-                                  r == 5 ? 5 : \
-                                  r == 6 ? 6 : 0) | \
-                                  (c == 0 ? 7 : \
-                                  c == 1 ? 0 : \
-                                  c == 2 ? 5 : \
-                                  c == 3 ? 2 : \
-                                  c == 4 ? 3 : \
-                                  c == 5 ? 4 : \
-                                  c == 6 ? 1 : 6) << 3)
+#define SCAN_ROW_0          7
+#define SCAN_ROW_1          1
+#define SCAN_ROW_2          2
+#define SCAN_ROW_3          3
+#define SCAN_ROW_4          4
+#define SCAN_ROW_5          5
+#define SCAN_ROW_6          6
+#define SCAN_ROW_7          0
+
+#define SCAN_COL_0          7
+#define SCAN_COL_1          0
+#define SCAN_COL_2          5
+#define SCAN_COL_3          2
+#define SCAN_COL_4          3
+#define SCAN_COL_5          4
+#define SCAN_COL_6          1
+#define SCAN_COL_7          6
 
 #define KB_MAX_ROWS         8
+
 
 static inline void kb_set_row(uint8_t row) {
   uint8_t tmp;
@@ -265,6 +290,6 @@ static inline uint8_t kb_read_col(void) {
 #  endif
 #endif
 
-#define UART_DOUBLE_SPEED
+//#define UART_DOUBLE_SPEED
 
 #endif /*CONFIG_H*/

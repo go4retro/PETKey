@@ -22,29 +22,6 @@
 #define VKB_PET_H
 
 /*
-  X0 = 0
-  X1 = 1
-  X2 = 2
-  X3 = 3
- */
-
-#define MATRIX_X(x)           (  ((x & 1) ? 1 : 0)   \
-                               | ((x & 2) ? 2 : 0) \
-                               | ((x & 4) ? 4 : 0)  \
-                               | ((x & 8) ? 8 : 0))
-
-/*
-  Y0 = 4
-  Y1 = 5
-  Y2 = 6
- */
-
-#define MATRIX_Y(y)           (  ((y & 1) ? 16 : 0) \
-                               | ((y & 2) ? 32 : 0) \
-                               | ((y & 4) ? 64 : 0))
-
-
-/*
  * From: http://www.6502.org/users/sjgray/projects/petkeyboard/index.html
  * PET Internal:
  * 12  11  10  9   8   7   6   5   4   3   2   1   J   H   F   E   D   C   B   A   <-LABEL ON PCB
@@ -53,35 +30,6 @@
  */
 
 
-
-#define MATRIX_MAP(x,y)         ( \
-                                 MATRIX_X( \
-                                          ( \
-                                           x == 0 ? 13 : \
-                                           x == 1 ? 12 : \
-                                           x == 2 ? 11 : \
-                                           x == 3 ? 10 : \
-                                           x == 4 ? 9 : \
-                                           x == 5 ? 8 : \
-                                           x == 6 ? 4 : \
-                                           x == 7 ? 3 : \
-                                           x == 8 ? 2 : 1 \
-                                          ) \
-                                         ) \
-                                 | \
-                                 MATRIX_Y( \
-                                          ( \
-                                           y == 0 ? 6 :   \
-                                           y == 1 ? 4 :   \
-                                           y == 2 ? 7 :   \
-                                           y == 3 ? 5 :   \
-                                           y == 4 ? 0 :   \
-                                           y == 5 ? 1 :   \
-                                           y == 6 ? 2 : 3 \
-                                          ) \
-                                         ) \
-                                )
-                                
 
 
 #define MAT_PET_KEY_EQUALS        MATRIX_MAP(0,0)
