@@ -94,11 +94,11 @@ static inline void timer_init(void) {
 
 #define XPT_RESET_DDR       DDRC
 #define XPT_RESET_OUT       PORTC
-#define XPT_RESET_PIN       PIN6
+#define XPT_RESET_PIN       PIN4
 
 #define XPT_AX0_DDR         DDRC
 #define XPT_AX0_OUT         PORTC
-#define XPT_AX0_PIN         PIN4
+#define XPT_AX0_PIN         PIN2
 
 #define XPT_AX1_DDR         DDRG
 #define XPT_AX1_OUT         PORTG
