@@ -416,6 +416,21 @@ static void map_key(uint8_t key) {
 void vkb_scan(void) {
   uint8_t key;
 
+  for(uint8_t r = 0; r < 10; r++) {
+    for(uint8_t c = 0; c < 8; c++) {
+      debug_puthex(r);
+      debug_putc(':');
+      debug_putcrlf();
+      debug_puthex(c);
+      debug_putcrlf();
+      xpt_send(r | c << 4,TRUE);
+      _delay_ms(1000);
+      xpt_send(r | c << 4,FALSE);
+      _delay_ms(1000);
+    }
+  }
+  while(1);
+
   for(;;) {
     if(kb_data_available() != 0) {
       // kb sent data...
