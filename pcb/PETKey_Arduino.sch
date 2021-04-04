@@ -4641,7 +4641,7 @@ W = angled&lt;p&gt;
 <part name="FRAME1" library="frames" deviceset="FRAME_A_L" device=""/>
 <part name="GOLD_ORB_SM1" library="oshw" deviceset="OSHWLOGO" device="LOGO8MM" value="Open Source Hardware"/>
 <part name="X1" library="commodore" deviceset="KB_PORT_VIC/64" device=""/>
-<part name="IC1" library="MT8812" deviceset="MT8812" device=""/>
+<part name="IC1" library="MT8812" deviceset="MT8812" device="" value="MT8812"/>
 <part name="GND1" library="supply1" deviceset="GND" device=""/>
 <part name="X2" library="commodore" deviceset="KB_PORT_PET" device=""/>
 </parts>
@@ -4673,20 +4673,6 @@ W = angled&lt;p&gt;
 <busses>
 </busses>
 <nets>
-<net name="CLK" class="0">
-<segment>
-<pinref part="SV1" gate="G$1" pin="21"/>
-<wire x1="152.4" y1="167.64" x2="147.32" y2="167.64" width="0.1524" layer="91"/>
-<label x="147.32" y="167.64" size="1.27" layer="95" ratio="10" rot="R180" xref="yes"/>
-</segment>
-</net>
-<net name="OE" class="0">
-<segment>
-<pinref part="SV1" gate="G$1" pin="22"/>
-<wire x1="167.64" y1="167.64" x2="172.72" y2="167.64" width="0.1524" layer="91"/>
-<label x="172.72" y="167.64" size="1.27" layer="95" ratio="10" xref="yes"/>
-</segment>
-</net>
 <net name="VCC" class="0">
 <segment>
 <pinref part="SUPPLY4" gate="G$1" pin="VCC"/>
@@ -5278,20 +5264,6 @@ W = angled&lt;p&gt;
 <pinref part="IC1" gate="A" pin="X11"/>
 <wire x1="170.18" y1="86.36" x2="172.72" y2="86.36" width="0.1524" layer="91"/>
 <label x="172.72" y="86.36" size="1.27" layer="95" ratio="10" xref="yes"/>
-</segment>
-</net>
-<net name="NOTUSED0" class="0">
-<segment>
-<pinref part="IC1" gate="A" pin="X0"/>
-<wire x1="170.18" y1="114.3" x2="172.72" y2="114.3" width="0.1524" layer="91"/>
-<label x="172.72" y="114.3" size="1.27" layer="95" ratio="10" xref="yes"/>
-</segment>
-</net>
-<net name="NOTUSED1" class="0">
-<segment>
-<pinref part="IC1" gate="A" pin="X5"/>
-<wire x1="170.18" y1="101.6" x2="172.72" y2="101.6" width="0.1524" layer="91"/>
-<label x="172.72" y="101.6" size="1.27" layer="95" ratio="10" xref="yes"/>
 </segment>
 </net>
 </nets>

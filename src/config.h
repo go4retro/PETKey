@@ -94,43 +94,43 @@ static inline void timer_init(void) {
 
 #define XPT_RESET_DDR       DDRC
 #define XPT_RESET_OUT       PORTC
-#define XPT_RESET_PIN       PIN4
+#define XPT_RESET_PIN       PIN6
 
 #define XPT_AX0_DDR         DDRC
 #define XPT_AX0_OUT         PORTC
-#define XPT_AX0_PIN         PIN2
+#define XPT_AX0_PIN         PIN4
 
 #define XPT_AX1_DDR         DDRG
 #define XPT_AX1_OUT         PORTG
-#define XPT_AX1_PIN         PIN0
+#define XPT_AX1_PIN         PIN2
 
-#define XPT_AX2_DDR         DDRG
-#define XPT_AX2_OUT         PORTG
-#define XPT_AX2_PIN         PIN2
+#define XPT_AX2_DDR         DDRC
+#define XPT_AX2_OUT         PORTC
+#define XPT_AX2_PIN         PIN0
 
 #define XPT_AX3_DDR         DDRC
 #define XPT_AX3_OUT         PORTC
-#define XPT_AX3_PIN         PIN3
+#define XPT_AX3_PIN         PIN5
 
-#define XPT_AY0_DDR         DDRD
-#define XPT_AY0_OUT         PORTD
-#define XPT_AY0_PIN         PIN7
+#define XPT_AY0_DDR         DDRC
+#define XPT_AY0_OUT         PORTC
+#define XPT_AY0_PIN         PIN1
 
 #define XPT_AY1_DDR         DDRC
 #define XPT_AY1_OUT         PORTC
-#define XPT_AY1_PIN         PIN0
+#define XPT_AY1_PIN         PIN2
 
 #define XPT_AY2_DDR         DDRC
 #define XPT_AY2_OUT         PORTC
-#define XPT_AY2_PIN         PIN5
+#define XPT_AY2_PIN         PIN7
 
 #define XPT_DATA_DDR        DDRC
 #define XPT_DATA_OUT        PORTC
-#define XPT_DATA_PIN        PIN1
+#define XPT_DATA_PIN        PIN3
 
-#define XPT_STROBE_DDR      DDRG
-#define XPT_STROBE_OUT      PORTG
-#define XPT_STROBE_PIN      PIN1
+#define XPT_STROBE_DDR      DDRD
+#define XPT_STROBE_OUT      PORTD
+#define XPT_STROBE_PIN      PIN7
 
 #else
 #  error "CONFIG_HARDWARE_VARIANT is unset or set to an unknown value."
@@ -194,8 +194,9 @@ static inline void xpt_send(uint8_t sw, uint8_t data) {
     XPT_DATA_OUT &= ~_BV(XPT_DATA_PIN);
 
   XPT_STROBE_OUT |= _BV(XPT_STROBE_PIN);
-  _delay_us(1);
+  _delay_ms(1000);
   XPT_STROBE_OUT &= ~_BV(XPT_STROBE_PIN);
+  _delay_ms(1000);
 }
 
 #define SCAN_MAP(r,c)             ((r == 0 ? 7 : \

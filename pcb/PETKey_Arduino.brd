@@ -1816,7 +1816,7 @@ design rules under a new name.</description>
 <attribute name="MPN" value="" x="10.16" y="24.13" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="OC_NEWARK" value="unknown" x="10.16" y="24.13" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="IC1" library="MT8812" package="DIP40" value="" x="21.59" y="25.4" rot="R270"/>
+<element name="IC1" library="MT8812" package="DIP40" value="MT8812" x="21.59" y="25.4" rot="R270"/>
 <element name="X2" library="commodore" package="MA20-1_KEYED" value="KB_PORT_PET" x="33.02" y="24.13" rot="R90"/>
 </elements>
 <signals>
@@ -1847,12 +1847,6 @@ design rules under a new name.</description>
 <contactref element="X1" pad="1"/>
 <contactref element="IC1" pad="20"/>
 <contactref element="X2" pad="1"/>
-</signal>
-<signal name="CLK">
-<contactref element="SV1" pad="21"/>
-</signal>
-<signal name="OE">
-<contactref element="SV1" pad="22"/>
 </signal>
 <signal name="VCC">
 <contactref element="C1" pad="1"/>
@@ -2203,12 +2197,6 @@ design rules under a new name.</description>
 <wire x1="13.97" y1="17.78" x2="25.4" y2="6.35" width="0.254" layer="16"/>
 <wire x1="25.4" y1="6.35" x2="31.75" y2="6.35" width="0.254" layer="16"/>
 <wire x1="31.75" y1="6.35" x2="33.02" y2="5.08" width="0.254" layer="16"/>
-</signal>
-<signal name="NOTUSED0">
-<contactref element="IC1" pad="33"/>
-</signal>
-<signal name="NOTUSED1">
-<contactref element="IC1" pad="28"/>
 </signal>
 </signals>
 </board>
