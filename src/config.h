@@ -290,6 +290,6 @@ static inline uint8_t kb_read_col(void) {
 #  endif
 #endif
 
-//#define UART_DOUBLE_SPEED
+#define UART_DOUBLE_SPEED
 
 #endif /*CONFIG_H*/
