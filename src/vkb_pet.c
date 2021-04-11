@@ -195,7 +195,8 @@ void set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_t state) {
   // TODO optimize for MAT_PET_KEY_NONE
 
   if(shift_override_key != MAT_PET_KEY_NONE) {
-    set_switch(shift_override_key, FALSE);
+    set_switch(shift_override_key & ~MOD_OVERRIDE, FALSE);
+    shift_override_key = MAT_PET_KEY_NONE;
   }
   switch(meta) {
     case META_FLAG_LSHIFT:
