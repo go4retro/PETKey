@@ -36,6 +36,7 @@
 #include "vkb_pet.h"
 
 static uint8_t meta;
+static uint8_t shift_override_key = MAT_PET_KEY_NONE;
 
 void vkb_irq(void) {
   kb_scan();
@@ -44,10 +45,12 @@ void vkb_irq(void) {
 }
 
 #define KB_SCAN_CODE_MASK 0x7f
-#define META_LSHIFT       0x01
-#define META_RSHIFT       0x02
-#define META_CMDR         0x04
-#define META_SHIFT_MASK   (META_LSHIFT | META_RSHIFT)
+
+#define META_FLAG_LSHIFT  0x01
+#define META_FLAG_RSHIFT  0x02
+#define META_FLAG_CTRL    0x04
+#define META_FLAG_CMDR    0x08
+#define META_SHIFT_MASK   (META_FLAG_LSHIFT | META_FLAG_RSHIFT)
 
 #define MOD_OVERRIDE      0x80
 
@@ -191,33 +194,38 @@ void set_switch(uint8_t sw, uint8_t state) {
 void set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_t state) {
   // TODO optimize for MAT_PET_KEY_NONE
 
+  if(shift_override_key != MAT_PET_KEY_NONE) {
+    set_switch(shift_override_key, FALSE);
+  }
   switch(meta) {
-    case META_LSHIFT:
-    case META_RSHIFT:
-    case (META_LSHIFT | META_RSHIFT):
+    case META_FLAG_LSHIFT:
+    case META_FLAG_RSHIFT:
+    case (META_FLAG_LSHIFT | META_FLAG_RSHIFT):
       if(!state)
         set_switch(shifted & ~MOD_OVERRIDE, state);
       if(shifted & MOD_OVERRIDE) {        // shift on and virtual unshift needed
-        if(meta & META_LSHIFT)           // do I need to fix left?
+        if(meta & META_FLAG_LSHIFT)           // do I need to fix left?
           set_switch(MAT_PET_KEY_LSHIFT, !state);
-        if(meta & META_RSHIFT)           // do I need to fix right?
+        if(meta & META_FLAG_RSHIFT)           // do I need to fix right?
           set_switch(MAT_PET_KEY_RSHIFT, !state);
+        shift_override_key = shifted;
       }
       if(state)
         set_switch(shifted & ~MOD_OVERRIDE, state);
       break;
-    case META_CMDR:
+    case META_FLAG_CMDR:
       if(!state)
         set_switch(cmdr & ~MOD_OVERRIDE, state);
       if(cmdr & MOD_OVERRIDE) {           // shift off and virtual shift needed
         set_switch(MAT_PET_KEY_LSHIFT, state);
+        shift_override_key = cmdr;
       }
       if(state)
         set_switch(cmdr & ~MOD_OVERRIDE, state);
       break;
-    case (META_CMDR | META_LSHIFT):
-    case (META_CMDR | META_RSHIFT):
-    case (META_CMDR | META_LSHIFT | META_RSHIFT):
+    case (META_FLAG_CMDR | META_FLAG_LSHIFT):
+    case (META_FLAG_CMDR | META_FLAG_RSHIFT):
+    case (META_FLAG_CMDR | META_FLAG_LSHIFT | META_FLAG_RSHIFT):
       // do nothing
       break;
     default:
@@ -226,6 +234,7 @@ void set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_t state) {
         set_switch(unshifted & ~MOD_OVERRIDE, state);
       if(unshifted & MOD_OVERRIDE) {      // shift off and virtual shift needed
         set_switch(MAT_PET_KEY_LSHIFT, state);
+        shift_override_key = unshifted;
       }
       if(state)
         set_switch(unshifted & ~MOD_OVERRIDE, state);
@@ -261,17 +270,17 @@ static void set_ascii_vkey(char key) {
 static void map_ascii_string(char *str) {
   char *p = &str[0];
 
-  if(meta & META_LSHIFT)           // do I need to fix left?
+  if(meta & META_FLAG_LSHIFT)           // do I need to fix left?
     set_switch(MAT_PET_KEY_LSHIFT, FALSE);
-  if(meta & META_RSHIFT)           // do I need to fix right?
+  if(meta & META_FLAG_RSHIFT)           // do I need to fix right?
     set_switch(MAT_PET_KEY_RSHIFT, FALSE);
   while(*p) {
     set_ascii_vkey(*p);
     p++;
   }
-  if(meta & META_LSHIFT)           // do I need to fix left?
+  if(meta & META_FLAG_LSHIFT)           // do I need to fix left?
     set_switch(MAT_PET_KEY_LSHIFT, TRUE);
-  if(meta & META_RSHIFT)           // do I need to fix right?
+  if(meta & META_FLAG_RSHIFT)           // do I need to fix right?
     set_switch(MAT_PET_KEY_RSHIFT, TRUE);
 }
 
@@ -328,31 +337,23 @@ static void map_key(uint8_t key) {
 
   case SCAN_C64_KEY_LSHIFT:
     debug_puts("LSHIFT");
+    meta = (meta & ~META_FLAG_LSHIFT) | (state ? META_FLAG_LSHIFT: 0);
     set_vkey(MAT_PET_KEY_LSHIFT, MAT_PET_KEY_LSHIFT, MAT_PET_KEY_LSHIFT, state);
-    if(state)
-      meta |= META_LSHIFT;
-    else
-      meta &= ~META_LSHIFT;
     break;
   case SCAN_C64_KEY_RSHIFT:
     debug_puts("RSHIFT");
+    meta = (meta & ~META_FLAG_RSHIFT) | (state ? META_FLAG_RSHIFT: 0);
     set_vkey(MAT_PET_KEY_RSHIFT, MAT_PET_KEY_RSHIFT, MAT_PET_KEY_RSHIFT, state);
-    if(state)
-      meta |= META_RSHIFT;
-    else
-      meta &= ~META_RSHIFT;
     break;
   case SCAN_C64_KEY_CBM:
     debug_puts("CBM");
     // no key to depress
-    if(state)
-      meta |= META_CMDR;
-    else
-      meta &= ~META_CMDR;
+    meta = (meta & ~META_FLAG_CMDR) | (state ? META_FLAG_CMDR: 0);
     break;
 
   case SCAN_C64_KEY_CTRL:
     debug_puts("CTRL");
+    meta = (meta & ~META_FLAG_CTRL) | (state ? META_FLAG_CTRL: 0);
     break;
 
   case SCAN_C64_KEY_F1:
