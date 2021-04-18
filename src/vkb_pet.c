@@ -496,7 +496,8 @@ static uint8_t map_key(uint8_t key) {
 
 typedef enum {
   OPTST_IDLE = 0,
-  OPTST_MAP_FUNC,
+  OPTST_MAP_KEY,
+  OPTST_MAP_KEY_DATA,
   OPTST_MAP_JOY,
   OPTST_JOYUP,
   OPTST_JOYDN,
@@ -539,39 +540,61 @@ void map_option(uint8_t key) {
     if(!state) {
       switch(_opt_state) {
         case OPTST_IDLE:
-          _key = cmp; // save off the key
+          _key = cmp | (IS_SHIFTED() ? SW_SHIFT_OVERRIDE : 0); // save off the key
           switch(cmp) {
             case SCAN_C64_KEY_J:
               _opt_state = OPTST_MAP_JOY;
               map_ascii_string("map joystick. joy#");
               break;
             case SCAN_C64_KEY_F1:
-              _opt_state = OPTST_MAP_FUNC;
+              _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
               map_ascii_vkey(IS_SHIFTED() ? '2' : '1');
               map_ascii_vkey(':');
               break;
             case SCAN_C64_KEY_F3:
-              _opt_state = OPTST_MAP_FUNC;
+              _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
               map_ascii_vkey(IS_SHIFTED() ? '4' : '3');
               map_ascii_vkey(':');
               break;
             case SCAN_C64_KEY_F5:
-              _opt_state = OPTST_MAP_FUNC;
+              _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
               map_ascii_vkey(IS_SHIFTED() ? '6' : '5');
               map_ascii_vkey(':');
               break;
             case SCAN_C64_KEY_F7:
-              _opt_state = OPTST_MAP_FUNC;
+              _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
               map_ascii_vkey(IS_SHIFTED() ? '8' : '7');
               map_ascii_vkey(':');
+              break;
+            case SCAN_C64_KEY_M: // map a key
+              _opt_state = OPTST_MAP_KEY;
+              map_ascii_string("map which key?:");
+              break;
+          }
+          break;
+        case OPTST_MAP_KEY:
+          switch(cmp) {
+            case SCAN_C64_KEY_LSHIFT:
+            case SCAN_C64_KEY_RSHIFT:
+            case SCAN_C64_KEY_CBM:
+            case SCAN_C64_KEY_CTRL:
+              // ignore.
+              map_ascii_string("invalid\r");
+              _opt_state = OPTST_IDLE;
+              break;
+            default:
+              _opt_state = OPTST_MAP_KEY_DATA;
+              _opt_num = 0;
+              map_key(key);
+              map_ascii_string(" (SH-RETURN to finish):");
               break;
           }
           break;
@@ -636,7 +659,7 @@ void map_option(uint8_t key) {
       }
     }
     switch(_opt_state) {
-      case OPTST_MAP_FUNC:
+      case OPTST_MAP_KEY_DATA:
         if(state && IS_SHIFTED() && (cmp == SCAN_C64_KEY_RETURN)) { // End Function
           // shift return ends definition
           _opt_state = OPTST_IDLE;
