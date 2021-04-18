@@ -266,7 +266,7 @@ static uint8_t set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_
 }
 
 
-static void map_ascii_vkey(char key) {
+static void map_ascii_key(char key) {
   uint8_t map = MAT_PET_KEY_NONE;
   uint8_t override = 0;
 
@@ -311,7 +311,7 @@ static void map_ascii_string(char *str) {
   if(_meta & META_FLAG_RSHIFT)           // do I need to fix right?
     set_switch(MAT_PET_KEY_RSHIFT, FALSE);
   while(*p) {
-    map_ascii_vkey(*p);
+    map_ascii_key(*p);
     p++;
   }
   if(_meta & META_FLAG_LSHIFT)           // do I need to fix left?
@@ -435,7 +435,12 @@ static uint8_t map_key(uint8_t key) {
         break;
       case SCAN_C64_KEY_RETURN:
         debug_puts("RETURN");
-        mapped = set_vkey(MAT_PET_KEY_RETURN, MAT_PET_KEY_RETURN, MAT_PET_KEY_NONE, state);
+        // add shift when in CONFIG mode.
+        mapped = set_vkey(MAT_PET_KEY_RETURN | (_config ? SW_SHIFT_OVERRIDE : 0),
+                          MAT_PET_KEY_RETURN,
+                          MAT_PET_KEY_NONE,
+                          state
+                         );
         break;
       case SCAN_C64_KEY_CRSR_RIGHT:
         debug_puts("CSRT");
@@ -550,29 +555,29 @@ void map_option(uint8_t key) {
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
-              map_ascii_vkey(IS_SHIFTED() ? '2' : '1');
-              map_ascii_vkey(':');
+              map_ascii_key(IS_SHIFTED() ? '2' : '1');
+              map_ascii_key(':');
               break;
             case SCAN_C64_KEY_F3:
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
-              map_ascii_vkey(IS_SHIFTED() ? '4' : '3');
-              map_ascii_vkey(':');
+              map_ascii_key(IS_SHIFTED() ? '4' : '3');
+              map_ascii_key(':');
               break;
             case SCAN_C64_KEY_F5:
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
-              map_ascii_vkey(IS_SHIFTED() ? '6' : '5');
-              map_ascii_vkey(':');
+              map_ascii_key(IS_SHIFTED() ? '6' : '5');
+              map_ascii_key(':');
               break;
             case SCAN_C64_KEY_F7:
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_ascii_string("map function key (SH-RETURN to finish) #");
-              map_ascii_vkey(IS_SHIFTED() ? '8' : '7');
-              map_ascii_vkey(':');
+              map_ascii_key(IS_SHIFTED() ? '8' : '7');
+              map_ascii_key(':');
               break;
             case SCAN_C64_KEY_M: // map a key
               _opt_state = OPTST_MAP_KEY;
