@@ -21,6 +21,17 @@
 #ifndef VKB_PET_H
 #define VKB_PET_H
 
+typedef enum {
+  JOY_UP,
+  JOY_DN,
+  JOY_LT,
+  JOY_RT,
+  JOY_F1,
+  JOY_F2
+} joy_pos_t;
+
+
+
 /*
  * From: http://www.6502.org/users/sjgray/projects/petkeyboard/index.html
  * PET Internal:

@@ -26,6 +26,7 @@
 #define KB_ST_READ_PORTS      3
 
 #define KB_KEY_UP             0x80
+#define KB_SCAN_CODE_MASK     ~KB_KEY_UP
 
 #define KB_NO_REPEAT          0xff
 

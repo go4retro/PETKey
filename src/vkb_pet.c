@@ -36,20 +36,40 @@
 
 #include "vkb_pet.h"
 
+typedef enum {
+  OPTST_IDLE = 0,
+  OPTST_MAP_KEY,
+  OPTST_MAP_KEY_DATA,
+  OPTST_MAP_JOY,
+  OPTST_JOYUP,
+  OPTST_JOYDN,
+  OPTST_JOYLT,
+  OPTST_JOYRT,
+  OPTST_JOYF1,
+  OPTST_JOYF2,
+  OPTST_DEBUG
+} opstates_t;
+
+
 static uint8_t _debug = FALSE;
 static uint8_t _meta = 0;
+//static uint8_t _config_meta = 0;
 static uint8_t _shift_override_key = MAT_PET_KEY_NONE;
 static uint8_t _config = FALSE;
 //static uint8_t _config = TRUE;
 static uint8_t _buf[64]; // TODO fix buffer overrun error.
+
+static opstates_t _opt_state = OPTST_IDLE;
+static uint8_t _opt_num;
+static uint8_t _joy_keys[2][6];
+static uint8_t _key;
+
 
 void vkb_irq(void) {
   kb_scan();
   //DDRB |= _BV(PIN7);
   //PORTB ^= _BV(PIN7);
 }
-
-#define KB_SCAN_CODE_MASK   0x7f
 
 #define META_FLAG_LSHIFT    0x01
 #define META_FLAG_RSHIFT    0x02
@@ -58,8 +78,10 @@ void vkb_irq(void) {
 #define META_SHIFT_MASK     (META_FLAG_LSHIFT | META_FLAG_RSHIFT)
 
 #define IS_SHIFTED()        (_meta & META_SHIFT_MASK)
+#define DELAY_JIFFY()       _delay_ms(1000/60)
 
-#define SW_SHIFT_OVERRIDE 0x80
+
+#define SW_SHIFT_OVERRIDE   0x80
 #define SW_VALUE_MASK       (uint8_t)~SW_SHIFT_OVERRIDE
 
 static uint8_t ascii_map[] = {
@@ -198,6 +220,8 @@ void debug_putkey(uint8_t sw, uint8_t state) {
     debug_putc(')');
   }
 }
+
+
 void set_switch(uint8_t sw, uint8_t state) {
   debug_putkey(sw, state);
   xpt_send(sw,state);
@@ -224,7 +248,7 @@ static uint8_t set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_
         if(_meta & META_FLAG_RSHIFT)           // do I need to fix right?
           set_switch(MAT_PET_KEY_RSHIFT, !state);
         _shift_override_key = shifted;
-        _delay_ms(1000/60); // wait to ensure the last shift state has been scanned
+        DELAY_JIFFY();
       }
       if(state)
         set_switch(shifted & ~SW_SHIFT_OVERRIDE, state);
@@ -268,11 +292,11 @@ static uint8_t set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_
 
 static void map_ascii_key(char key) {
   uint8_t map = MAT_PET_KEY_NONE;
-  uint8_t override = 0;
+  uint8_t shift = FALSE;
 
   if((key & ~0x20) > '@' && (key & ~0x20) < '[') { // alpha
     // put shift on the lower values
-    override = (key & 0x20 ? 0 : SW_SHIFT_OVERRIDE);
+    shift = (key & 0x20);
     key &= ~0x20;
   }
 
@@ -287,18 +311,18 @@ static void map_ascii_key(char key) {
       debug_putc(13);
       // send Shift Return in config mode
       map = MAT_PET_KEY_RETURN;
-      override = _config;
+      shift = _config;
       break;
   }
   if(map != MAT_PET_KEY_NONE) {
-    if(override)
+    if(shift)
       set_switch(MAT_PET_KEY_LSHIFT, TRUE);
     set_switch(map, TRUE);
-    _delay_ms(16);
+    DELAY_JIFFY();
     set_switch(map, FALSE);
-    if(override)
+    if(shift)
       set_switch(MAT_PET_KEY_LSHIFT, FALSE);
-    _delay_ms(16);
+    DELAY_JIFFY();
   }
 }
 
@@ -362,8 +386,12 @@ static uint8_t  map_macro(uint8_t key, uint8_t state) {
   uint8_t override;
   uint8_t map;
 
+  //debug_putc('m');
+  //debug_puthex(key | (IS_SHIFTED() ? SW_SHIFT_OVERRIDE : 0));
   if(kbm_find(key | (IS_SHIFTED() ? SW_SHIFT_OVERRIDE : 0), &len, _buf)
                  == KBMRES_SUCCESS) {
+    debug_putc(state ? '+' : '-');
+    debug_puts("macro");
     if(state) {  // only handle macros on key down.
       if(_meta & META_FLAG_LSHIFT)
         set_switch(MAT_PET_KEY_LSHIFT, FALSE);
@@ -379,11 +407,11 @@ static uint8_t  map_macro(uint8_t key, uint8_t state) {
           if(override)
             set_switch(MAT_PET_KEY_LSHIFT, TRUE);
           set_switch(map, TRUE);
-          _delay_ms(16);
+          DELAY_JIFFY();
           set_switch(map, FALSE);
           if(override)
             set_switch(MAT_PET_KEY_LSHIFT, FALSE);
-          _delay_ms(16);
+          DELAY_JIFFY();
         }
       }
       _debug = FALSE;
@@ -418,13 +446,15 @@ static uint8_t map_key(uint8_t key) {
     }
   } else {
     map_meta_key(cmp, state); // map meta keys
-    if(!map_macro(cmp, state)) {
+    if(_config || (!_config && !map_macro(cmp, state))) {
       switch(cmp) {
       default:
         for(i = 0; i < MAP_TBL_SZ; i++) {
           if(key_map[i][1] == cmp) {
             debug_putc(key_map[i][0]);
             mapped = set_vkey(key_map[i][2], key_map[i][3], key_map[i][4], state);
+            if(_config)
+              debug_putkey(mapped & SW_VALUE_MASK, state);
             break;
           }
         }
@@ -499,34 +529,6 @@ static uint8_t map_key(uint8_t key) {
 }
 
 
-typedef enum {
-  OPTST_IDLE = 0,
-  OPTST_MAP_KEY,
-  OPTST_MAP_KEY_DATA,
-  OPTST_MAP_JOY,
-  OPTST_JOYUP,
-  OPTST_JOYDN,
-  OPTST_JOYLT,
-  OPTST_JOYRT,
-  OPTST_JOYF1,
-  OPTST_JOYF2,
-  OPTST_DEBUG
-} opstates_t;
-
-static opstates_t _opt_state = OPTST_IDLE;
-static uint8_t _opt_num;
-static uint8_t _joy_keys[2][6];
-static uint8_t _key;
-
-typedef enum {
-  JOY_UP,
-  JOY_DN,
-  JOY_LT,
-  JOY_RT,
-  JOY_F1,
-  JOY_F2
-} joy_pos_t;
-
 void map_option(uint8_t key) {
   uint8_t state;
   uint8_t cmp;
@@ -596,6 +598,7 @@ void map_option(uint8_t key) {
               _opt_state = OPTST_IDLE;
               break;
             default:
+              _key = cmp | (IS_SHIFTED() ? SW_SHIFT_OVERRIDE : 0); // save off the key
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_key(key);
@@ -669,6 +672,8 @@ void map_option(uint8_t key) {
           // shift return ends definition
           _opt_state = OPTST_IDLE;
           kbm_del(_key); // delete old mapping;
+          //debug_trace(_buf,0,_opt_num);
+          //debug_puthex(_key);
           kbm_add(_key, _opt_num, _buf);
           map_ascii_string("mapped\r");
         } else {
