@@ -19,7 +19,7 @@
  */
 
 #define VER_MAJOR         0
-#define VER_MINOR         0
+#define VER_MINOR         1
 #define VER_PATCH         0 
-#define VER_FIX           1
+#define VER_FIX           0
 #define VER_PRERELEASE    

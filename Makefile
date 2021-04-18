@@ -73,6 +73,7 @@ SRC += eeprom.c
 SRC += kb.c
 SRC += vkb_pet.c
 SRC += debug.c
+SRC += kb_macro.c
 
 ifeq ($(CONFIG_UART_DEBUG),y)
   SRC += uart.c
