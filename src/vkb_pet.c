@@ -443,8 +443,8 @@ static uint8_t map_key(uint8_t key) {
      && (_meta & META_FLAG_CBM)
     ) {
     if(!state) { // enter CONFIG mode on key up.
-      map_ascii_string("config mode on\r");
       _config = !_config;
+      map_ascii_string("config mode on\r");
     }
   } else {
     map_meta_key(cmp, state); // map meta keys
@@ -542,7 +542,7 @@ void map_option(uint8_t key) {
 
   map_meta_key(cmp, state); // handle meta keys
   if(!state && (_meta & META_FLAG_CTRL) && (_meta & META_FLAG_CBM) && (cmp == SCAN_C64_KEY_DELETE)) {
-    map_ascii_string("config mode off\n");
+    map_ascii_string("config mode off\r");
     _config = !_config;
     // TODO save state, most likely
   } else {
@@ -558,28 +558,28 @@ void map_option(uint8_t key) {
             case SCAN_C64_KEY_F1:
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
-              map_ascii_string("map function key (SH-RETURN to finish) #");
+              map_ascii_string("map function key (sh-return to finish) #");
               map_ascii_key(IS_SHIFTED() ? '2' : '1');
               map_ascii_key(':');
               break;
             case SCAN_C64_KEY_F3:
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
-              map_ascii_string("map function key (SH-RETURN to finish) #");
+              map_ascii_string("map function key (sh-return to finish) #");
               map_ascii_key(IS_SHIFTED() ? '4' : '3');
               map_ascii_key(':');
               break;
             case SCAN_C64_KEY_F5:
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
-              map_ascii_string("map function key (SH-RETURN to finish) #");
+              map_ascii_string("map function key (sh-return to finish) #");
               map_ascii_key(IS_SHIFTED() ? '6' : '5');
               map_ascii_key(':');
               break;
             case SCAN_C64_KEY_F7:
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
-              map_ascii_string("map function key (SH-RETURN to finish) #");
+              map_ascii_string("map function key (sh-return to finish) #");
               map_ascii_key(IS_SHIFTED() ? '8' : '7');
               map_ascii_key(':');
               break;
@@ -604,7 +604,7 @@ void map_option(uint8_t key) {
               _opt_state = OPTST_MAP_KEY_DATA;
               _opt_num = 0;
               map_key(key);
-              map_ascii_string(" (SH-RETURN to finish):");
+              map_ascii_string(" (sh-return to finish):");
               break;
           }
           break;
