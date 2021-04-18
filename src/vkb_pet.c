@@ -292,35 +292,37 @@ static uint8_t set_vkey(uint8_t unshifted, uint8_t shifted, uint8_t cmdr, uint8_
 
 static void map_ascii_key(char key) {
   uint8_t map = MAT_PET_KEY_NONE;
-  uint8_t shift = FALSE;
+  uint8_t pshift = FALSE;
+  uint8_t pkey = key;
 
-  if((key & ~0x20) > '@' && (key & ~0x20) < '[') { // alpha
+  if((key > '@') && (key < '[')) { // unshifted ASCII, shifted PETSCII
     // put shift on the lower values
-    shift = (key & 0x20);
-    key &= ~0x20;
+    pshift = TRUE;
+  } else if ((key > '`') && (key < '{')) { // shifted ASCII, unshifted PETSCII
+    pkey = key & ~0x20;
   }
 
-  switch(key) {
+  switch(pkey) {
     default:
-      if(key >= ' ' && key <= (ASCII_MAP_TBL_SZ + ' ')) {
+      if(pkey >= ' ' && pkey <= (ASCII_MAP_TBL_SZ + ' ')) {
         debug_putc(key);
-        map = ascii_map[key - ' '];
+        map = ascii_map[pkey - ' '];
       }
       break;
     case 13:
       debug_putc(13);
       // send Shift Return in config mode
       map = MAT_PET_KEY_RETURN;
-      shift = _config;
+      pshift = _config;
       break;
   }
   if(map != MAT_PET_KEY_NONE) {
-    if(!shift)
+    if(pshift)
       set_switch(MAT_PET_KEY_LSHIFT, TRUE);
     set_switch(map, TRUE);
     DELAY_JIFFY();
     set_switch(map, FALSE);
-    if(!shift)
+    if(pshift)
       set_switch(MAT_PET_KEY_LSHIFT, FALSE);
     DELAY_JIFFY();
   }
@@ -441,7 +443,7 @@ static uint8_t map_key(uint8_t key) {
      && (_meta & META_FLAG_CBM)
     ) {
     if(!state) { // enter CONFIG mode on key up.
-      map_ascii_string("config mode on\n");
+      map_ascii_string("config mode on\r");
       _config = !_config;
     }
   } else {
