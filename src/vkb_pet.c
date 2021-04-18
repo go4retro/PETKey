@@ -78,7 +78,7 @@ void vkb_irq(void) {
 #define META_SHIFT_MASK     (META_FLAG_LSHIFT | META_FLAG_RSHIFT)
 
 #define IS_SHIFTED()        (_meta & META_SHIFT_MASK)
-#define DELAY_JIFFY()       _delay_ms(1000/60)
+#define DELAY_JIFFY()       _delay_ms(1000/50)
 
 
 #define SW_SHIFT_OVERRIDE   0x80
@@ -315,12 +315,12 @@ static void map_ascii_key(char key) {
       break;
   }
   if(map != MAT_PET_KEY_NONE) {
-    if(shift)
+    if(!shift)
       set_switch(MAT_PET_KEY_LSHIFT, TRUE);
     set_switch(map, TRUE);
     DELAY_JIFFY();
     set_switch(map, FALSE);
-    if(shift)
+    if(!shift)
       set_switch(MAT_PET_KEY_LSHIFT, FALSE);
     DELAY_JIFFY();
   }
@@ -505,7 +505,7 @@ static uint8_t map_key(uint8_t key) {
         mapped = MAT_PET_KEY_NONE;
         debug_puts("F3");
         if(state) {
-          map_function_key("f3\r", "f4\r");
+          map_function_key("dload \"*\"\r", "f4\r");
         }
         break;
       case SCAN_C64_KEY_F5:
